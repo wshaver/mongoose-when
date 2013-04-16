@@ -1,7 +1,7 @@
-mongoosewhen
+mongoose-when
 ============
 
-Add jquery style .when support to mongoose promise object.
+Add jquery style .when support to mongoose promise object. Requires mongoose v3.6.1 or higher, no other requirements.
 
 Use exactly like jquery.when on which this code is based. http://api.jquery.com/jQuery.when/
 
@@ -17,3 +17,5 @@ Promise.when(p1, p2).addBack(function(err, users, animals) {
   //etc
 });
 ```
+
+See unit tests for for more usage examples.
