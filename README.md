@@ -11,8 +11,8 @@ Promise.when() returns a Mongoose promise object.
 var mongoose = require('mongoose');
 var Promise = mongoose.Promise;
 
-var p1 = Users.find();
-var p2 = Animals.find();
+var p1 = Users.find().exec();
+var p2 = Animals.find().exec();
 Promise.when(p1, p2).addBack(function(err, users, animals) {
   //etc
 });
