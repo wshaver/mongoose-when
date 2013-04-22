@@ -81,92 +81,55 @@ describe('Promise.when', function(){
   });
 });
 
+describe('Promise.when database tests', function(){
+  var conn;
+  before(function(){
+    conn = mongoose.connect('localhost', 'mongoose_when_unit_tests');
+  });
 
-/*
-    model.textSearch('blueberry', function (err, res) {
-      assert.ifError(err);
-      assert.ok(res);
-      assert.ok(Array.isArray(res.results));
-      res.results.forEach(function (result) {
-        assert.ok(result.obj instanceof mongoose.Document);
-      })
-      assert.equal(1, res.results.length);
-      assert.equal(blueberry.id, res.results[0].obj.id);
-      done();
-    })
-  })
+  after(function(){
+    conn.connection.db.dropDatabase();
+    conn.connection.close();
+  });
 
-  it('accepts limit', function(done){
-    model.textSearch('strings', { limit: 1 }, function (err, res) {
-      assert.ifError(err);
-      assert.ok(res);
-      assert.ok(Array.isArray(res.results));
-      assert.equal(1, res.results.length);
-      assert.equal(blueberry.id, res.results[0].obj.id);
-      done();
-    })
-  })
+  it('works when pulling items from a db', function(done){
 
-  it('accepts filter (and casts)', function(done){
-    model.textSearch('strings', { filter: { array: [1] } }, function (err, res) {
-      assert.ifError(err);
-      assert.ok(res);
-      assert.ok(Array.isArray(res.results));
-      assert.equal(1, res.results.length);
-      assert.equal(elephant.id, res.results[0].obj.id);
-      done();
-    })
-  })
+    var Schema = mongoose.Schema;
+    var CarSchema = Schema({
+      model: String,
+      wheels: Number
+    });
 
-  describe('accepts project', function(){
-    it('with object syntax', function(done){
-      model.textSearch('funny', { project: {single: 0}}, function (err, res) {
-        assert.ifError(err);
-        assert.ok(res);
-        assert.ok(Array.isArray(res.results));
-        assert.equal(1, res.results.length);
-        assert.equal(letters.id, res.results[0].obj.id);
-        assert.equal(undefined, res.results[0].obj.single);
-        done();
-      })
-    })
-    it('with string syntax', function(done){
-      model.textSearch('funny', { project: '-single'}, function (err, res) {
-        assert.ifError(err);
-        assert.ok(res);
-        assert.ok(Array.isArray(res.results));
-        assert.equal(1, res.results.length);
-        assert.equal(letters.id, res.results[0].obj.id);
-        assert.equal(undefined, res.results[0].obj.single);
-        done();
-      })
-    })
-  })
+    var BoatSchema = Schema({
+      model: String,
+      hulls: Number
+    });
 
-  it('accepts language', function(done){
-    model.textSearch('funny', { language: 'spanish'}, function (err, res) {
-      assert.ifError(err);
-      assert.ok(res);
-      assert.ok(Array.isArray(res.results));
-      assert.equal(0, res.results.length);
-      done();
-    })
-  })
 
-  it('supports lean', function(done){
-    model.textSearch('string', { lean: true }, function (err, res) {
-      assert.ifError(err);
-      assert.ok(res);
-      assert.ok(Array.isArray(res.results));
-      assert.equal(2, res.results.length);
-      res.results.forEach(function (result) {
-        assert.ok(!(result.obj instanceof mongoose.Document));
-      })
-      done();
-    })
-  })
+    var CarModel = mongoose.model('car', CarSchema);
+    var BoatModel = mongoose.model('boat', BoatSchema);
 
-})
-
-// if mongoose >= 3.6.1 text index type is supported
-*/
+    var c1 = new CarModel({model:'focus', wheels: 4});
+    c1.save(function(err, c){
+      if(err){
+        return done(err);
+      }
+      var b1 = new BoatModel({model:'bayliner', hulls: 1});
+      b1.save(function(err, b){
+        if(err){
+          return done(err);
+        }
+        var p1 = CarModel.find().exec();
+        var p2 = BoatModel.find().exec();
+        Promise.when(p1, p2).addBack(function(err, cars, boats){
+          assert.ifError(err);
+          assert.ok(Array.isArray(cars));
+          assert.ok(Array.isArray(boats));
+          assert.equal(c1._id.toString(), cars[0]._id.toString());
+          assert.equal(b1._id.toString(), boats[0]._id.toString());
+          done();
+        });
+      });
+    });
+  });
+});
