@@ -48,6 +48,27 @@ describe('Promise.when', function(){
 
   });
 
+  it('returns from a chained promises', function(done){
+    var p = new Promise();
+    var p2 = new Promise();
+    var p3 = p2.then(function () {return result_c;});
+
+    var whenPromise = Promise.when(p, p3).addBack(function(err, result, result2){
+      assert.ifError(err);
+      assert.equal(result_a, result);
+      assert.equal(result_c, result2);
+      done();
+    });
+    
+    assert.notEqual(p, whenPromise);
+    assert.notEqual(p3, whenPromise);
+
+    p.fulfill(result_a);
+    p2.fulfill(result_b);
+    p3.fulfill(result_c);
+
+  });
+
   it('rejects when one of the promises rejects', function(done){
     var p = new Promise();
     var p2 = new Promise();
