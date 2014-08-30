@@ -19,6 +19,7 @@ describe('mongoose-when', function(){
 describe('Promise.when', function(){
   var result_a = 'abc123';
   var result_b = 'xyz456';
+  var result_c = 'asd373';
   it('returns from a single promise', function(done){
     var p = new Promise();
     var whenPromise = Promise.when(p).addBack(function(err, result){
