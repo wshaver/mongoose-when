@@ -19,6 +19,7 @@ describe('mongoose-when', function(){
 describe('Promise.when', function(){
   var result_a = 'abc123';
   var result_b = 'xyz456';
+  var result_c = 'asd373';
   it('returns from a single promise', function(done){
     var p = new Promise();
     var whenPromise = Promise.when(p).addBack(function(err, result){
@@ -45,6 +46,27 @@ describe('Promise.when', function(){
 
     p.fulfill(result_a);
     p2.fulfill(result_b);
+
+  });
+
+  it('returns from a chained promises', function(done){
+    var p = new Promise();
+    var p2 = new Promise();
+    var p3 = p2.then(function () {return result_c;});
+
+    var whenPromise = Promise.when(p, p3).addBack(function(err, result, result2){
+      assert.ifError(err);
+      assert.equal(result_a, result);
+      assert.equal(result_c, result2);
+      done();
+    });
+    
+    assert.notEqual(p, whenPromise);
+    assert.notEqual(p3, whenPromise);
+
+    p.fulfill(result_a);
+    p2.fulfill(result_b);
+    p3.fulfill(result_c);
 
   });
 
